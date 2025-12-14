@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,7 +23,8 @@ class User extends Authenticatable
         'phone',
         'password',
         'role_id',
-        'status'
+        'status',
+        'last_login',
     ];
 
     /**
@@ -36,18 +38,21 @@ class User extends Authenticatable
     ];
 
     /**
-     * The attributes that should be cast.
+     * Get the attributes that should be cast.
      *
-     * @var array<string, string>
+     * @return array<string, string>
      */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-        'password' => 'hashed',
-        'last_login' => 'datetime',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'email_verified_at' => 'datetime',
+            'last_login' => 'datetime',
+            'password' => 'hashed',
+        ];
+    }
 
     /**
-     * Get the role associated with the user
+     * Get the role that owns the user.
      */
     public function role()
     {
@@ -55,35 +60,44 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if the user has a specific role
-     *
-     * @param string $roleName
-     * @return bool
-     */
-    public function hasRole($roleName)
-    {
-        return $this->role->name === $roleName;
-    }
-
-    /**
-     * Check if the user is an admin (any admin role)
-     *
-     * @return bool
-     */
-    public function isAdmin()
-    {
-        if (!$this->role) {
-            return false;
-        }
-
-        return in_array($this->role->name, ['SectorAdmin', 'DistrictAdmin', 'SystemAdmin']);
-    }
-
-    /**
-     * Get the farms that belong to this user
+     * Get the farms for the user.
      */
     public function farms()
     {
         return $this->hasMany(Farm::class);
+    }
+
+    /**
+     * Get the devices for the user.
+     */
+    public function devices()
+    {
+        return $this->hasMany(Device::class);
+    }
+
+    /**
+     * Get the permissions for the user.
+     */
+    public function permissions()
+    {
+        return $this->belongsToMany(Permission::class, 'user_permissions');
+    }
+
+    /**
+     * Check if user has permission
+     */
+    public function hasPermission($permission)
+    {
+        // Check role permissions
+        if ($this->role && $this->role->hasPermission($permission)) {
+            return true;
+        }
+
+        // Check direct user permissions
+        if (is_string($permission)) {
+            return $this->permissions->contains('name', $permission);
+        }
+
+        return $this->permissions->contains($permission);
     }
 }

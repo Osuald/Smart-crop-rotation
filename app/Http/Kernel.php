@@ -29,6 +29,8 @@ class Kernel extends HttpKernel
     /**
      * The application's route middleware.
      *
+     * These middleware may be assigned to groups or used individually.
+     *
      * @var array<string, class-string|string>
      */
     protected $routeMiddleware = [
@@ -44,6 +46,7 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
+        'farmer' => \App\Http\Middleware\FarmerMiddleware::class,
     ];
 
     /**
@@ -55,12 +58,12 @@ class Kernel extends HttpKernel
         'web' => [
             // ...existing code...
         ],
-        
+
         'api' => [
             // ...existing code...
         ],
     ];
-    
+
     /**
      * The application's middleware aliases.
      *
@@ -80,7 +83,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'admin' => \App\Http\Middleware\AdminMiddleware::class,
     ];
-    
+
     /**
      * Get the middleware aliases for the application.
      *
@@ -92,4 +95,6 @@ class Kernel extends HttpKernel
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);
     }
+
+
 }

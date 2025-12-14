@@ -44,12 +44,12 @@
         <div class="menu-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">Role Management</div>
     </a>
 
-    <a href="{{ route('admin.reports') }}" style="text-decoration: none; color: inherit;">
-        <div class="menu-item {{ request()->routeIs('admin.reports') ? 'active' : '' }}">Reports</div>
+    <a href="{{ route('admin.soil') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.soil*') ? 'active' : '' }}">Soil Management</div>
     </a>
 
-    <a href="{{ route('admin.crops') }}" style="text-decoration: none; color: inherit;">
-        <div class="menu-item {{ request()->routeIs('admin.crops') ? 'active' : '' }}">Crop Database</div>
+    <a href="{{ route('admin.reports') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.reports') ? 'active' : '' }}">Reports</div>
     </a>
 
     <a href="{{ route('admin.settings') }}" style="text-decoration: none; color: inherit;">

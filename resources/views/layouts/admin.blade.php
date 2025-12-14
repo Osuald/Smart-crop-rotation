@@ -3,96 +3,229 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin - Smart Crop Rotation')</title>
-    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Farmer Dashboard - Smart Crop Rotation')</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
     <style>
-        body {
-            font-family: 'Nunito', sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f7fafc;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-        .content {
-            display: flex;
-            margin-top: 20px;
-        }
-        .main {
-            flex: 1;
-            margin-left: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .stat-card {
-            background-color: #f9f9f9;
-            border-radius: 6px;
-            padding: 15px;
-            text-align: center;
-        }
-        .stat-card h3 {
-            margin-top: 0;
-            color: #666;
-        }
-        .stat-card .number {
-            font-size: 24px;
-            font-weight: bold;
-            color: #303f9f;
-        }
-        .actions {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .btn {
-            padding: 8px 16px;
-            background-color: #303f9f;
+        .sidebar {
+            min-height: 100vh;
+            background: #0ac15e;
             color: white;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 2px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .sidebar .nav-link i {
+            width: 20px;
+            text-align: center;
+            margin-right: 10px;
+        }
+
+        .main-content {
+            background-color: #f8f9fa;
+            min-height: 100vh;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+
+        }
+
+        .navbar {
+
+            background: #0ac15e !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .user-info {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            background: #4a7c4f;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+        }
+
+        .card {
             border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            text-decoration: none;
-            display: inline-block;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-radius: 12px;
         }
-        .table {
-            width: 100%;
-            border-collapse: collapse;
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2c5530 0%, #4a7c4f 100%);
+            border: none;
         }
-        .table th, .table td {
-            padding: 10px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        .table th {
-            background-color: #f2f2f2;
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #1e3a21 0%, #3a6440 100%);
         }
     </style>
     @yield('styles')
 </head>
 <body>
-    @include('components.admin.header')
+    <div class="d-flex">
+        <!-- Sidebar -->
+        <div class="sidebar p-3" style="width: 280px;">
+            <!-- User Info -->
+            <div class="user-info d-flex align-items-center">
+                <div class="user-avatar">
+                    <i class="fas fa-user fa-lg"></i>
+                </div>
+                <div>
+                    <h6 class="mb-0">{{ Auth::user()->name ?? Auth::user()->username }}</h6>
+                    <small class="text-white-50">{{ Auth::user()->role->name ?? 'Farmer' }}</small>
+                </div>
+            </div>
 
-    <div class="container">
-        <div class="content">
-            @include('components.admin.sidebar')
+            <!-- Navigation -->
+            <nav class="nav flex-column">
+                <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('farmer.dashboard') ? 'active' : '' }}">
 
-            <div class="main">
+                    <i class="fas fa-tachometer-alt"></i>Dashboard
+                </a>
+               <a href="{{ route('admin.users.index') }}" class="nav-link {{ request()->routeIs('farmer.soil*') ? 'active' : '' }}">
+                    <i class="fas fa-seedling"></i>User Management
+                </a>
+
+
+                <a href="{{ route('admin.devices') }}" class="nav-link {{ request()->routeIs('farmer.soil*') ? 'active' : '' }}">
+                    <i class="fas fa-seedling"></i>Devices Management
+                </a>
+
+                <a href="{{ route('admin.soil') }}" class="nav-link {{ request()->routeIs('farmer.soil*') ? 'active' : '' }}">
+                    <i class="fas fa-seedling"></i>Soil Management
+                </a>
+
+                <a href="{{ route('admin.farmers') }}" class="nav-link">
+                    <i class="fas fa-chart-bar"></i>Farmer Management
+                </a>
+
+                <a href="#" class="nav-link">
+                    <i class="fas fa-map-marker-alt"></i>Role Management
+                </a>
+
+
+                <a href="#" class="nav-link">
+                    <i class="fas fa-lightbulb"></i>Report
+                </a>
+
+                <a href="#" class="nav-link">
+                    <i class="fas fa-cog"></i>Settings
+                </a>
+
+                <hr class="my-3">
+
+                <a href="#" class="nav-link" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                    <i class="fas fa-sign-out-alt"></i>Logout
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content flex-grow-1">
+            <!-- Top Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-white px-4">
+                <div class="container-fluid">
+                    <h4 class="navbar-brand mb-0">@yield('title', 'Farmer Dashboard')</h4>
+
+                    <div class="d-flex align-items-center">
+                        <div class="dropdown">
+                            <button class="btn btn-link dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-user-circle fa-lg"></i>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-user me-2"></i>Profile</a></li>
+                                <li><a class="dropdown-item" href="#"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li>
+                                    <a class="dropdown-item" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Content Area -->
+            <div class="p-4">
                 @yield('content')
             </div>
         </div>
     </div>
 
+    <!-- Logout Form -->
+    <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
+        @csrf
+    </form>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     @yield('scripts')
 </body>
 </html>
+<!--
+<div class="sidebar">
+    <a href="{{ route('admin.dashboard') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">Dashboard</div>
+    </a>
+
+    <a href="{{ route('admin.users.index') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">User Management</div>
+    </a>
+
+    <a href="{{ route('admin.devices') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.devices') ? 'active' : '' }}">Devices Management</div>
+    </a>
+
+    <a href="{{ route('admin.farmers') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.farmers') ? 'active' : '' }}">Farmer Management</div>
+    </a>
+
+    <a href="{{ route('admin.roles.index') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.roles.*') ? 'active' : '' }}">Role Management</div>
+    </a>
+
+    <a href="{{ route('admin.soil') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.soil*') ? 'active' : '' }}">Soil Management</div>
+    </a>
+
+    <a href="{{ route('admin.reports') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.reports') ? 'active' : '' }}">Reports</div>
+    </a>
+
+    <a href="{{ route('admin.settings') }}" style="text-decoration: none; color: inherit;">
+        <div class="menu-item {{ request()->routeIs('admin.settings') ? 'active' : '' }}">System Settings</div>
+    </a>
+</div> -->

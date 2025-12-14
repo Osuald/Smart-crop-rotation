@@ -5,18 +5,22 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Models\Role;
+use App\Models\Permission;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
     /**
-     * Display a listing of the users.
+     * Display a listing of users.
      */
     public function index()
     {
-        $users = User::with('role')->get();
-        return view('admin.user_management', compact('users'));
+        $users = User::with(['role.permissions'])->paginate(15);
+        $roles = Role::with('permissions')->get();
+
+        return view('admin.user_management', compact('users', 'roles'));
     }
 
     /**
@@ -29,25 +33,42 @@ class UserController extends Controller
     }
 
     /**
-     * Store a newly created user in storage.
+     * Store a newly created user.
      */
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $request->validate([
+            'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users',
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'nullable|string|max:20',
-            'role_id' => 'required|exists:roles,id',
             'password' => 'required|string|min:8|confirmed',
-            'status' => 'required|in:active,inactive,suspended',
+            'role_id' => 'required|exists:roles,id',
+            'status' => 'required|in:active,inactive,suspended'
         ]);
 
-        $validated['password'] = Hash::make($validated['password']);
+        try {
+            $user = User::create([
+                'name' => $request->name,
+                'username' => $request->username,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'password' => Hash::make($request->password),
+                'role_id' => $request->role_id,
+                'status' => $request->status
+            ]);
 
-        User::create($validated);
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User created successfully.');
+            return response()->json([
+                'success' => true,
+                'message' => 'User created successfully!',
+                'user' => $user
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error creating user: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -55,7 +76,12 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        return view('admin.users.show', compact('user'));
+        $user->load(['role.permissions']);
+
+        return response()->json([
+            'success' => true,
+            'user' => $user
+        ]);
     }
 
     /**
@@ -68,45 +94,106 @@ class UserController extends Controller
     }
 
     /**
-     * Update the specified user in storage.
+     * Update the specified user.
      */
     public function update(Request $request, User $user)
     {
-        $validated = $request->validate([
-            'username' => 'required|string|max:255|unique:users,username,' . $user->id,
-            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
+            'email' => ['required', 'string', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'phone' => 'nullable|string|max:20',
+            'password' => 'nullable|string|min:8|confirmed',
             'role_id' => 'required|exists:roles,id',
-            'status' => 'required|in:active,inactive,suspended',
+            'status' => 'required|in:active,inactive,suspended'
         ]);
 
-        if ($request->filled('password')) {
-            $request->validate([
-                'password' => 'string|min:8|confirmed',
+        try {
+            $updateData = [
+                'name' => $request->name,
+                'username' => $request->username,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'role_id' => $request->role_id,
+                'status' => $request->status
+            ];
+
+            if ($request->password) {
+                $updateData['password'] = Hash::make($request->password);
+            }
+
+            $user->update($updateData);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User updated successfully!',
+                'user' => $user
             ]);
-            $validated['password'] = Hash::make($request->password);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating user: ' . $e->getMessage()
+            ], 500);
         }
-
-        $user->update($validated);
-
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User updated successfully.');
     }
 
     /**
-     * Remove the specified user from storage.
+     * Remove the specified user.
      */
     public function destroy(User $user)
     {
-        // Prevent self-deletion
-        if ($user->id === auth()->id()) {
-            return redirect()->route('admin.users.index')
-                ->with('error', 'You cannot delete your own account.');
+        try {
+            $user->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'User deleted successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting user: ' . $e->getMessage()
+            ], 500);
         }
+    }
 
-        $user->delete();
+    /**
+     * Show user permissions management.
+     */
+    public function permissions(User $user)
+    {
+        $user->load(['role.permissions', 'permissions']);
+        $permissions = Permission::all()->groupBy('category');
 
-        return redirect()->route('admin.users.index')
-            ->with('success', 'User deleted successfully.');
+        return response()->json([
+            'success' => true,
+            'user' => $user,
+            'permissions' => $permissions
+        ]);
+    }
+
+    /**
+     * Update user permissions.
+     */
+    public function updatePermissions(Request $request, User $user)
+    {
+        $request->validate([
+            'permissions' => 'array',
+            'permissions.*' => 'exists:permissions,id'
+        ]);
+
+        try {
+            $user->permissions()->sync($request->permissions ?? []);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Permissions updated successfully!'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error updating permissions: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

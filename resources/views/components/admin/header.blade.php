@@ -32,7 +32,7 @@
 </style>
 
 <div class="header">
-    <h1>Smart Crop Rotation Admin</h1>
+    <h1>Smart Crop Rotation Admin!</h1>
     <div class="user-info">
         <span>Welcome, {{ Auth::user()->name }} (System Admin)</span>
         <form class="logout-form" action="{{ route('logout') }}" method="POST">

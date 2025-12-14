@@ -1,674 +1,617 @@
 @extends('layouts.admin')
 
-@section('title', 'Farmer Management - Smart Crop Rotation')
+@section('title', 'Farmer Management - Admin Dashboard')
 
 @section('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<!-- Bootstrap 5 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<!-- Custom styles -->
 <style>
-    /* Enhanced table styles */
-    .table {
-        border-collapse: separate;
-        border-spacing: 0;
-        width: 100%;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-    }
-
-    .table thead th {
-        background-color: #f8f9fa;
-        padding: 15px;
-        font-weight: 600;
-        border-bottom: 2px solid #e9ecef;
-        color: #495057;
-        text-transform: uppercase;
-        font-size: 0.8rem;
-        letter-spacing: 0.5px;
-    }
-
-    .table tbody td {
-        padding: 15px;
-        border-bottom: 1px solid #e9ecef;
-        vertical-align: middle;
-    }
-
-    .table tbody tr:last-child td {
-        border-bottom: none;
-    }
-
-    .table tbody tr:hover {
-        background-color: #f8f9fa;
-    }
-
-    /* Action buttons */
-    .action-buttons {
-        display: flex;
-        gap: 8px;
-    }
-
-    .btn {
-        border-radius: 6px;
-        transition: all 0.3s ease;
-        font-weight: 500;
-    }
-
-    .btn:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Enhanced modals */
-    .modal-content {
-        border: none;
-        border-radius: 12px;
-        box-shadow: 0 5px 30px rgba(0, 0, 0, 0.15);
-    }
-
     .modal-header {
-        border-bottom: 1px solid #f0f0f0;
-        padding: 20px 25px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
     }
-
-    .modal-body {
-        padding: 25px;
+    .modal-header .btn-close {
+        filter: invert(1);
     }
-
-    .modal-footer {
-        border-top: 1px solid #f0f0f0;
-        padding: 20px 25px;
+    .btn-group .btn {
+        margin: 0 2px;
     }
-
-    /* Form controls */
-    .form-control {
-        border-radius: 6px;
-        padding: 10px 15px;
-        border: 1px solid #ced4da;
-        min-height: 45px;
-    }
-
-    .form-control:focus {
-        border-color: #0ac15e;
-        box-shadow: 0 0 0 0.2rem rgba(10, 193, 94, 0.25);
-    }
-
-    .form-group label {
-        font-weight: 600;
-        margin-bottom: 8px;
-        color: #495057;
-    }
-
-    /* Pagination */
-    .pagination {
-        margin: 20px 0 0;
-    }
-
-    .page-item.active .page-link {
-        background-color: #0ac15e;
-        border-color: #0ac15e;
-    }
-
-    .page-link {
-        color: #0ac15e;
-        border-radius: 4px;
-        margin: 0 3px;
-    }
-
-    /* Card header */
-    .card-header {
-        padding: 20px;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    }
-
-    /* Enhanced notifications */
-    .toast-success {
-        background-color: #0ac15e !important;
-    }
-
-    .toast-error {
-        background-color: #dc3545 !important;
-    }
-
-    /* Modal details styling */
-    .farmer-detail {
-        padding: 12px 18px;
-        border-radius: 8px;
+    .table th {
         background-color: #f8f9fa;
-        margin-bottom: 12px;
+        font-weight: 600;
     }
-
-    .farmer-detail strong {
-        display: block;
-        color: #6c757d;
-        font-size: 0.85rem;
-        margin-bottom: 5px;
-    }
-
-    .farmer-detail span {
-        font-size: 1.1rem;
-        color: #212529;
-    }
-
-    /* Badge styles for status */
-    .badge {
-        padding: 8px 12px;
-        border-radius: 50px;
-        font-weight: 500;
-        font-size: 0.85rem;
-    }
-
-    .badge-success {
-        background-color: #e3fcef;
-        color: #0ac15e;
+    .status-active { background-color: #198754 !important; }
+    .status-inactive { background-color: #ffc107 !important; }
+    .status-suspended { background-color: #dc3545 !important; }
+    .farmer-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     }
 </style>
 @endsection
 
 @section('content')
-    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin: 0;">Farmer Management</h2>
-        <button class="btn" id="openAddFarmerModal" style="display: flex; align-items: center; background-color: #0ac15e; color: white; padding: 10px 20px; font-weight: 600;">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
-                <line x1="12" y1="5" x2="12" y2="19"></line>
-                <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            Add Farmer
-        </button>
-    </div>
-
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Full Name</th>
-                <th>Phone Number</th>
-                <th>Email</th>
-                <th>Location</th>
-                <th style="width: 180px;">Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            @php
-                // Fetch all users with farmer role (role_id = 1)
-                $farmers = \App\Models\User::where('role_id', 1)->paginate(5);
-            @endphp
-
-            @forelse($farmers as $farmer)
-                <tr>
-                    <td>{{ $farmer->name }}</td>
-                    <td>{{ $farmer->phone ?? 'N/A' }}</td>
-                    <td>{{ $farmer->email }}</td>
-                    <td>{{ $farmer->location ?? 'N/A' }}</td>
-                    <td>
-                        <div class="action-buttons">
-                            <button class="btn view-farmer" data-id="{{ $farmer->id }}" style="padding: 8px 16px; font-size: 0.875rem; background-color: #0ac15e; color: white;">
-                                <i class="fas fa-eye" style="margin-right: 5px;"></i> View
-                            </button>
-                            <button class="btn edit-farmer" data-id="{{ $farmer->id }}" style="padding: 8px 16px; font-size: 0.875rem; background-color: #007bff; color: white;">
-                                <i class="fas fa-edit" style="margin-right: 5px;"></i> Edit
-                            </button>
-                            <button class="btn delete-farmer" data-id="{{ $farmer->id }}" style="padding: 8px 16px; font-size: 0.875rem; background-color: #dc3545; color: white;">
-                                <i class="fas fa-trash" style="margin-right: 5px;"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            @empty
-                <tr>
-                    <td colspan="5" class="text-center" style="padding: 30px;">
-                        <div style="color: #6c757d;">
-                            <i class="fas fa-users" style="font-size: 3rem; margin-bottom: 15px; color: #e9ecef;"></i>
-                            <p style="font-size: 1.1rem;">No farmers found</p>
-                            <p style="font-size: 0.9rem;">Click "Add Farmer" to add your first farmer</p>
-                        </div>
-                    </td>
-                </tr>
-            @endforelse
-        </tbody>
-    </table>
-
-    <!-- Pagination -->
-    <div style="display: flex; justify-content: center; align-items: center; margin-top: 20px;">
-        {{ $farmers->links() }}
-    </div>
-
-    <!-- Add Farmer Modal -->
-    <div class="modal fade" id="addFarmerModal" tabindex="-1" role="dialog" aria-labelledby="addFarmerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div style="display: flex; align-items: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ac15e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="8.5" cy="7" r="4"></circle>
-                            <line x1="20" y1="8" x2="20" y2="14"></line>
-                            <line x1="23" y1="11" x2="17" y2="11"></line>
-                        </svg>
-                        <h5 class="modal-title" id="addFarmerModalLabel" style="font-weight: 700; margin: 0;">Add New Farmer</h5>
-                    </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
+<div class="container-fluid">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0"><i class="fas fa-seedling me-2"></i>Farmer Management</h3>
+                    <button type="button" class="btn btn-light btn-sm" data-bs-toggle="modal" data-bs-target="#farmerModal" onclick="openCreateModal()">
+                        <i class="fas fa-plus me-2"></i>Add New Farmer
                     </button>
-                </div>
-                <div class="modal-body">
-                    <form id="addFarmerForm" action="{{ route('admin.farmers.store') }}" method="POST">
-                        @csrf
-                        <div class="form-group mb-3">
-                            <label for="name">Full Name</label>
-                            <input type="text" class="form-control" id="name" name="name" placeholder="Enter full name" required>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="phone">Phone Number</label>
-                            <input type="tel" class="form-control" id="phone" name="phone" placeholder="+250 7XX XXX XXX">
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="email">Email</label>
-                            <input type="email" class="form-control" id="email" name="email" placeholder="name@example.com" required>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="location">Location</label>
-                            <input type="text" class="form-control" id="location" name="location" placeholder="Enter location">
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="password">Password</label>
-                            <input type="password" class="form-control" id="password" name="password" placeholder="Enter password" required>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="password_confirmation">Confirm Password</label>
-                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" placeholder="Confirm password" required>
-                        </div>
-
-                        <div class="modal-footer justify-content-between" style="padding-left: 0; padding-right: 0;">
-                            <button type="button" class="btn" style="background-color: #f8f9fa; color: #6c757d;" data-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn" style="background-color: #0ac15e; color: white; padding-left: 30px; padding-right: 30px;">
-                                <i class="fas fa-save mr-1"></i> Save Farmer
-                            </button>
-                        </div>
-                    </form>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- View Farmer Modal -->
-    <div class="modal fade" id="viewFarmerModal" tabindex="-1" role="dialog" aria-labelledby="viewFarmerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div style="display: flex; align-items: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#0ac15e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 12px;">
-                            <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="8.5" cy="7" r="4"></circle>
-                        </svg>
-                        <h5 class="modal-title" id="viewFarmerModalLabel" style="font-weight: 700; margin: 0;">Farmer Details</h5>
+    <!-- Farmers Table Section -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped" id="farmersTable">
+<thead style="background-color: #343a40; color: black;font-weight:boldd">                                <tr>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Location</th>
+                                    <th>Status</th>
+                                    <th>Registered</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="farmersTableBody">
+                                <!-- Dynamic content will be loaded here -->
+                            </tbody>
+                        </table>
                     </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Farmer Create/Edit Modal -->
+<div class="modal fade" id="farmerModal" tabindex="-1" aria-labelledby="farmerModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="farmerModalLabel">
+                    <i class="fas fa-user-plus me-2"></i>Add New Farmer
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form id="farmerForm">
                 <div class="modal-body">
-                    <div class="farmer-detail">
-                        <strong>Full Name</strong>
-                        <span id="view-name"></span>
-                    </div>
-                    <div class="farmer-detail">
-                        <strong>Email Address</strong>
-                        <span id="view-email"></span>
-                    </div>
-                    <div class="farmer-detail">
-                        <strong>Phone Number</strong>
-                        <span id="view-phone"></span>
-                    </div>
-                    <div class="farmer-detail">
-                        <strong>Location</strong>
-                        <span id="view-location"></span>
-                    </div>
-                    <div class="farmer-detail">
-                        <strong>Registered On</strong>
-                        <span id="view-created"></span>
-                    </div>
-                    <div class="farmer-detail">
-                        <strong>Account Status</strong>
-                        <span><span class="badge badge-success" id="view-status"></span></span>
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">
+                                <i class="fas fa-user me-1"></i>Full Name
+                            </label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>Email
+                            </label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="phone" class="form-label">
+                                <i class="fas fa-phone me-1"></i>Phone
+                            </label>
+                            <input type="text" class="form-control" id="phone" name="phone">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="location" class="form-label">
+                                <i class="fas fa-map-marker-alt me-1"></i>Location
+                            </label>
+                            <input type="text" class="form-control" id="location" name="location">
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Password
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password">
+                            <div class="form-text">Leave blank to keep current password (for edit)</div>
+                            <div class="invalid-feedback"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="password_confirmation" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Confirm Password
+                            </label>
+                            <input type="password" class="form-control" id="password_confirmation" name="password_confirmation">
+                            <div class="invalid-feedback"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn" style="background-color: #f8f9fa; color: #6c757d;" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn edit-from-view" style="background-color: #007bff; color: white;">
-                        <i class="fas fa-edit mr-1"></i> Edit
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="submit" class="btn btn-success" id="submitBtn">
+                        <i class="fas fa-save me-1"></i>Save Farmer
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
+</div>
 
-    <!-- Edit Farmer Modal -->
-    <div class="modal fade" id="editFarmerModal" tabindex="-1" role="dialog" aria-labelledby="editFarmerModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <div style="display: flex; align-items: center;">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#007bff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 10px;">
-                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                        </svg>
-                        <h5 class="modal-title" id="editFarmerModalLabel">Edit Farmer</h5>
+<!-- Farmer View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" aria-labelledby="viewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="viewModalLabel">
+                    <i class="fas fa-user me-2"></i>Farmer Details
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="viewModalBody">
+                <div class="text-center">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
                     </div>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+                    <p class="mt-2">Loading farmer details...</p>
                 </div>
-                <div class="modal-body">
-                    <form id="editFarmerForm" method="POST">
-                        @csrf
-                        @method('PUT')
-                        <input type="hidden" id="edit-id" name="id">
-                        <div class="form-group mb-3">
-                            <label for="edit-name">Full Name</label>
-                            <input type="text" class="form-control" id="edit-name" name="name" required>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="edit-phone">Phone Number</label>
-                            <input type="tel" class="form-control" id="edit-phone" name="phone">
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="edit-email">Email</label>
-                            <input type="email" class="form-control" id="edit-email" name="email" required>
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="edit-location">Location</label>
-                            <input type="text" class="form-control" id="edit-location" name="location">
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="edit-password">Password (leave blank to keep current)</label>
-                            <input type="password" class="form-control" id="edit-password" name="password" placeholder="Enter new password">
-                        </div>
-
-                        <div class="form-group mb-3">
-                            <label for="edit-password-confirmation">Confirm Password</label>
-                            <input type="password" class="form-control" id="edit-password-confirmation" name="password_confirmation" placeholder="Confirm new password">
-                        </div>
-
-                        <div class="modal-footer justify-content-between">
-                            <button type="button" class="btn btn-outline-secondary" data-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn" style="background-color: #007bff; color: white;">Update Farmer</button>
-                        </div>
-                    </form>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Close
+                </button>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- Delete Confirmation Modal -->
-    <div class="modal fade" id="deleteFarmerModal" tabindex="-1" role="dialog" aria-labelledby="deleteFarmerModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header border-bottom-0">
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Confirm Delete
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center">
+                    <i class="fas fa-user-times fa-3x text-danger mb-3"></i>
+                    <h5>Are you sure you want to delete this farmer?</h5>
+                    <p class="text-muted">This action cannot be undone and will also delete all associated farms.</p>
                 </div>
-                <div class="modal-body text-center">
-                    <i class="fas fa-exclamation-circle" style="font-size: 3rem; color: #dc3545; margin-bottom: 20px;"></i>
-                    <h5 style="font-weight: 700; margin-bottom: 15px;">Delete Farmer</h5>
-                    <p>Are you sure you want to delete this farmer? This action cannot be undone.</p>
-                </div>
-                <div class="modal-footer border-top-0 justify-content-center">
-                    <button type="button" class="btn" style="background-color: #f8f9fa; color: #6c757d;" data-dismiss="modal">Cancel</button>
-                    <form id="deleteFarmerForm" method="POST">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger">
-                            <i class="fas fa-trash mr-1"></i> Delete
-                        </button>
-                    </form>
-                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash me-1"></i>Delete Farmer
+                </button>
             </div>
         </div>
     </div>
+</div>
+@endsection
 
-    @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
-    <script>
-        $(document).ready(function() {
-            // Toast notification configuration
-            toastr.options = {
-                "closeButton": true,
-                "progressBar": true,
-                "positionClass": "toast-top-right",
-                "showDuration": "300",
-                "hideDuration": "1000",
-                "timeOut": "5000",
-                "extendedTimeOut": "1000"
-            };
+@section('scripts')
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- SweetAlert2 for better alerts -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            // Show success message from session
-            @if(session('success'))
-                toastr.success('{{ session('success') }}');
-            @endif
+<script>
+let isEditing = false;
+let currentFarmerId = null;
 
-            // Show error message from session
-            @if(session('error'))
-                toastr.error('{{ session('error') }}');
-            @endif
+// Add CSRF token to all requests
+function getCSRFToken() {
+    const token = document.querySelector('meta[name="csrf-token"]');
+    return token ? token.getAttribute('content') : '';
+}
 
-            // Open the add modal with animation
-            $('#openAddFarmerModal').on('click', function() {
-                $('#addFarmerModal').modal({
-                    backdrop: 'static',
-                    keyboard: false
-                });
-                $('#addFarmerModal').on('shown.bs.modal', function() {
-                    $('#name').focus();
-                });
+// Load farmers on page load
+document.addEventListener('DOMContentLoaded', function() {
+    loadFarmers();
+
+    // Add CSRF token to meta tag if it doesn't exist
+    if (!document.querySelector('meta[name="csrf-token"]')) {
+        const meta = document.createElement('meta');
+        meta.name = 'csrf-token';
+        meta.content = '{{ csrf_token() }}';
+        document.getElementsByTagName('head')[0].appendChild(meta);
+    }
+});
+
+function loadFarmers() {
+    fetch('/admin/farmers', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.farmers) {
+            renderFarmersTable(data.farmers);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading farmers:', error);
+        Swal.fire('Error', 'Failed to load farmers', 'error');
+    });
+}
+
+function renderFarmersTable(farmers) {
+    const tbody = document.getElementById('farmersTableBody');
+    tbody.innerHTML = '';
+
+    if (farmers.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7" class="text-center text-muted py-4">
+                    <i class="fas fa-seedling fa-2x mb-2"></i>
+                    <br>No farmers found. Add your first farmer to get started.
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    farmers.forEach(farmer => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <div class="d-flex align-items-center">
+
+                    <div>
+                        <div class="fw-bold">${farmer.name || 'N/A'}</div>
+                        <small class="text-muted">${farmer.username || 'N/A'}</small>
+                    </div>
+                </div>
+            </td>
+            <td>${farmer.email || 'N/A'}</td>
+            <td>${farmer.phone || 'N/A'}</td>
+            <td>${farmer.location || 'N/A'}</td>
+            <td>
+                <span class="badge status-${farmer.status} rounded-pill">
+                    <i class="fas fa-circle me-1" style="font-size: 0.6em;"></i>
+                    ${farmer.status ? farmer.status.charAt(0).toUpperCase() + farmer.status.slice(1) : 'N/A'}
+                </span>
+            </td>
+            <td>
+                <small>${new Date(farmer.created_at).toLocaleDateString()}</small>
+            </td>
+            <td>
+                <div class="btn-group" role="group" aria-label="Farmer actions">
+                    <button type="button" class="btn btn-outline-info btn-sm"
+                            onclick="viewFarmer(${farmer.id})"
+                            data-bs-toggle="modal"
+                            data-bs-target="#viewModal"
+                            title="View Details">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm"
+                            onclick="editFarmer(${farmer.id})"
+                            data-bs-toggle="modal"
+                            data-bs-target="#farmerModal"
+                            title="Edit Farmer">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm"
+                            onclick="confirmDelete(${farmer.id})"
+                            title="Delete Farmer">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function openCreateModal() {
+    isEditing = false;
+    currentFarmerId = null;
+
+    // Reset modal
+    document.getElementById('farmerModalLabel').innerHTML = '<i class="fas fa-user-plus me-2"></i>Add New Farmer';
+    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save me-1"></i>Save Farmer';
+    document.getElementById('farmerForm').reset();
+
+    // Reset validation states
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+    // Set password as required for new farmer
+    document.getElementById('password').required = true;
+    document.getElementById('password_confirmation').required = true;
+}
+
+function editFarmer(farmerId) {
+    if (!farmerId) {
+        Swal.fire('Error', 'Invalid farmer ID', 'error');
+        return;
+    }
+
+    isEditing = true;
+    currentFarmerId = farmerId;
+
+    // Update modal title
+    document.getElementById('farmerModalLabel').innerHTML = '<i class="fas fa-user-edit me-2"></i>Edit Farmer';
+    document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save me-1"></i>Update Farmer';
+
+    // Password not required for edit
+    document.getElementById('password').required = false;
+    document.getElementById('password_confirmation').required = false;
+
+    // Show loading
+    Swal.fire({
+        title: 'Loading...',
+        text: 'Fetching farmer data',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => Swal.showLoading()
+    });
+
+    // Fetch farmer data
+    fetch(`/admin/farmers/${farmerId}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        Swal.close();
+
+        if (data) {
+            document.getElementById('name').value = data.name || '';
+            document.getElementById('email').value = data.email || '';
+            document.getElementById('phone').value = data.phone || '';
+            document.getElementById('location').value = data.location || '';
+        } else {
+            throw new Error('Farmer data not found');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire('Error', 'Failed to load farmer data: ' + error.message, 'error');
+    });
+}
+
+function viewFarmer(farmerId) {
+    if (!farmerId) {
+        Swal.fire('Error', 'Invalid farmer ID', 'error');
+        return;
+    }
+
+    // Reset modal content with loading state
+    document.getElementById('viewModalBody').innerHTML = `
+        <div class="text-center">
+            <div class="spinner-border text-success" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Loading farmer details...</p>
+        </div>
+    `;
+
+    fetch(`/admin/farmers/${farmerId}`, {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data) {
+            document.getElementById('viewModalBody').innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6 class="text-success">Personal Information</h6>
+                                <p><strong>Name:</strong> ${data.name || 'N/A'}</p>
+                                <p><strong>Username:</strong> ${data.username || 'N/A'}</p>
+                                <p><strong>Email:</strong> ${data.email || 'N/A'}</p>
+                                <p><strong>Phone:</strong> ${data.phone || 'N/A'}</p>
+                                <p><strong>Location:</strong> ${data.location || 'N/A'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6 class="text-success">Account Information</h6>
+                                <p><strong>Status:</strong>
+                                    <span class="badge bg-${data.status === 'active' ? 'success' : (data.status === 'inactive' ? 'warning' : 'danger')}">
+                                        ${data.status ? data.status.charAt(0).toUpperCase() + data.status.slice(1) : 'N/A'}
+                                    </span>
+                                </p>
+                                <p><strong>Registered:</strong> ${new Date(data.created_at).toLocaleDateString()}</p>
+                                <p><strong>Last Updated:</strong> ${new Date(data.updated_at).toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            throw new Error('Farmer data not found');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        document.getElementById('viewModalBody').innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Error loading farmer data: ${error.message}
+            </div>
+        `;
+    });
+}
+
+function confirmDelete(farmerId) {
+    if (!farmerId) {
+        Swal.fire('Error', 'Invalid farmer ID', 'error');
+        return;
+    }
+
+    const deleteModal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    deleteModal.show();
+
+    document.getElementById('confirmDeleteBtn').onclick = function() {
+        deleteFarmer(farmerId);
+        deleteModal.hide();
+    };
+}
+
+function deleteFarmer(farmerId) {
+    Swal.fire({
+        title: 'Deleting...',
+        text: 'Please wait while we delete the farmer.',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        willOpen: () => Swal.showLoading()
+    });
+
+    fetch(`/admin/farmers/${farmerId}`, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success !== false) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Deleted!',
+                text: 'Farmer has been deleted successfully.',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                loadFarmers(); // Reload the table
             });
-
-            // View farmer details with improved data display
-            $('.view-farmer').on('click', function() {
-                let farmerId = $(this).data('id');
-                let viewModal = $('#viewFarmerModal');
-
-                // Store the ID for the edit button
-                viewModal.data('farmer-id', farmerId);
-
-                // Add loading state
-                $('#view-name, #view-email, #view-phone, #view-location, #view-created, #view-status').html(
-                    '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Loading...'
-                );
-
-                // Show the modal immediately with loading indicators
-                viewModal.modal('show');
-
-                // Fetch farmer details via AJAX
-                $.ajax({
-                    url: `/admin/farmers/${farmerId}`,
-                    method: 'GET',
-                    success: function(response) {
-                        // Populate the modal with farmer details
-                        $('#view-name').text(response.name);
-                        $('#view-email').text(response.email);
-                        $('#view-phone').text(response.phone || 'N/A');
-                        $('#view-location').text(response.location || 'N/A');
-                        $('#view-created').text(new Date(response.created_at).toLocaleDateString('en-US', {
-                            year: 'numeric', month: 'long', day: 'numeric'
-                        }));
-                        $('#view-status').text(response.status ? response.status.toUpperCase() : 'ACTIVE');
-                    },
-                    error: function(error) {
-                        console.error('Error fetching farmer details', error);
-                        toastr.error('Could not fetch farmer details');
-                        viewModal.modal('hide');
-                    }
-                });
-            });
-
-            // Handle edit button in view modal
-            $('.edit-from-view').on('click', function() {
-                let farmerId = $('#viewFarmerModal').data('farmer-id');
-                $('#viewFarmerModal').modal('hide');
-
-                // Trigger click on the edit button with the same ID
-                $(`.edit-farmer[data-id="${farmerId}"]`).trigger('click');
-            });
-
-            // Edit farmer with improved UI feedback
-            $('.edit-farmer').on('click', function() {
-                let farmerId = $(this).data('id');
-
-                // Show loading spinner on button
-                let $btn = $(this);
-                let originalHtml = $btn.html();
-                $btn.html('<i class="fas fa-spinner fa-spin"></i> Loading...');
-                $btn.prop('disabled', true);
-
-                // Fetch farmer details for editing
-                $.ajax({
-                    url: `/admin/farmers/${farmerId}`,
-                    method: 'GET',
-                    success: function(response) {
-                        // Set form action
-                        $('#editFarmerForm').attr('action', `/admin/farmers/${farmerId}`);
-
-                        // Populate the form
-                        $('#edit-id').val(response.id);
-                        $('#edit-name').val(response.name);
-                        $('#edit-email').val(response.email);
-                        $('#edit-phone').val(response.phone);
-                        $('#edit-location').val(response.location);
-
-                        // Show the modal
-                        $('#editFarmerModal').modal('show');
-
-                        // Reset button state
-                        $btn.html(originalHtml);
-                        $btn.prop('disabled', false);
-                    },
-                    error: function(error) {
-                        console.error('Error fetching farmer details', error);
-                        toastr.error('Could not fetch farmer details for editing');
-
-                        // Reset button state
-                        $btn.html(originalHtml);
-                        $btn.prop('disabled', false);
-                    }
-                });
-            });
-
-            // Delete farmer with confirmation
-            $('.delete-farmer').on('click', function() {
-                let farmerId = $(this).data('id');
-
-                // Set form action for delete
-                $('#deleteFarmerForm').attr('action', `/admin/farmers/${farmerId}`);
-
-                // Show delete confirmation modal
-                $('#deleteFarmerModal').modal('show');
-            });
-
-            // Form submission with AJAX
-            $('#addFarmerForm').on('submit', function(e) {
-                e.preventDefault();
-
-                let $form = $(this);
-                let $submitBtn = $form.find('button[type="submit"]');
-                let originalBtnText = $submitBtn.html();
-
-                // Disable button and show loading state
-                $submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Saving...');
-                $submitBtn.prop('disabled', true);
-
-                $.ajax({
-                    url: $form.attr('action'),
-                    method: 'POST',
-                    data: $form.serialize(),
-                    success: function(response) {
-                        // Hide modal
-                        $('#addFarmerModal').modal('hide');
-
-                        // Show success message
-                        toastr.success('Farmer added successfully!');
-
-                        // Reload page after short delay
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1000);
-                    },
-                    error: function(xhr) {
-                        // Reset button
-                        $submitBtn.html(originalBtnText);
-                        $submitBtn.prop('disabled', false);
-
-                        // Display validation errors
-                        if (xhr.status === 422) {
-                            let errors = xhr.responseJSON.errors;
-                            Object.keys(errors).forEach(function(key) {
-                                toastr.error(errors[key][0]);
-                            });
-                        } else {
-                            toastr.error('Something went wrong. Please try again.');
-                        }
-                    }
-                });
-            });
-
-            // Similar AJAX handling for edit form
-            $('#editFarmerForm').on('submit', function(e) {
-                e.preventDefault();
-
-                let $form = $(this);
-                let $submitBtn = $form.find('button[type="submit"]');
-                let originalBtnText = $submitBtn.html();
-
-                // Disable button and show loading state
-                $submitBtn.html('<i class="fas fa-spinner fa-spin"></i> Updating...');
-                $submitBtn.prop('disabled', true);
-
-                $.ajax({
-                    url: $form.attr('action'),
-                    method: 'POST',
-                    data: $form.serialize(),
-                    success: function(response) {
-                        // Hide modal
-                        $('#editFarmerModal').modal('hide');
-
-                        // Show success message
-                        toastr.success('Farmer updated successfully!');
-
-                        // Reload page after short delay
-                        setTimeout(function() {
-                            location.reload();
-                        }, 1000);
-                    },
-                    error: function(xhr) {
-                        // Reset button
-                        $submitBtn.html(originalBtnText);
-                        $submitBtn.prop('disabled', false);
-
-                        // Display validation errors
-                        if (xhr.status === 422) {
-                            let errors = xhr.responseJSON.errors;
-                            Object.keys(errors).forEach(function(key) {
-                                toastr.error(errors[key][0]);
-                            });
-                        } else {
-                            toastr.error('Something went wrong. Please try again.');
-                        }
-                    }
-                });
-            });
+        } else {
+            throw new Error(data.message || 'Failed to delete farmer');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.message || 'An unexpected error occurred while deleting the farmer.'
         });
-    </script>
-    @endpush
+    });
+}
+
+// Form submission
+document.getElementById('farmerForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    // Clear previous validation states
+    this.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+
+    // Show loading state
+    const submitBtn = document.getElementById('submitBtn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Saving...';
+    submitBtn.disabled = true;
+
+    const formData = new FormData(this);
+    const url = isEditing ? `/admin/farmers/${currentFarmerId}` : '/admin/farmers';
+
+    if (isEditing) {
+        formData.append('_method', 'PUT');
+    }
+
+    fetch(url, {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRF-TOKEN': getCSRFToken(),
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || `HTTP error! status: ${response.status}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+
+        if (data.success !== false) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: isEditing ? 'Farmer updated successfully.' : 'Farmer created successfully.',
+                timer: 2000,
+                showConfirmButton: false
+            }).then(() => {
+                // Close modal and reload table
+                bootstrap.Modal.getInstance(document.getElementById('farmerModal')).hide();
+                loadFarmers();
+            });
+        } else {
+            // Handle validation errors
+            if (data.errors) {
+                Object.keys(data.errors).forEach(field => {
+                    const input = document.getElementById(field);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        const feedback = input.nextElementSibling;
+                        if (feedback && feedback.classList.contains('invalid-feedback')) {
+                            feedback.textContent = data.errors[field][0];
+                        }
+                    }
+                });
+            }
+            throw new Error(data.message || 'Validation failed');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        Swal.fire({
+            icon: 'error',
+            title: 'Error!',
+            text: error.message || 'An unexpected error occurred while saving the farmer.'
+        });
+    });
+});
+</script>
 @endsection
