@@ -2,8 +2,6 @@
 
 Smart Crop Rotation is a Laravel-based web application (starter) to manage and optimise crop rotations on farms. It helps plan sequences of crops to improve soil health, maximise yields and reduce pest/disease pressure. This README provides a clear, runnable starting point — installation, configuration, development and contribution steps — and placeholders where you can add project-specific details.
 
-> NOTE: I drafted this README as a cleaned-up, practical guide. If you want me to include screenshots, sample datasets, or API docs, tell me which assets or endpoints to document and I’ll update the file.
-
 ## Table of Contents
 
 - [About](#about)
@@ -29,7 +27,6 @@ Smart Crop Rotation aims to provide a simple, practical way to plan crop rotatio
 - Visualising rotation sequences and generating reports
 - (Optional) Integrating with weather/soil data APIs to improve recommendations
 
-If the app differs (e.g., focuses on research modelling, farm management, or mobile-first UX), replace the above with a short one-line description of the actual purpose.
 
 ## Key features (example)
 
@@ -40,7 +37,6 @@ If the app differs (e.g., focuses on research modelling, farm management, or mob
 - Export rotation plans (CSV / PDF)
 - User management (roles: admin, agronomist, farmer)
 
-Add or remove features to match the real functionality.
 
 ## Prerequisites
 
@@ -49,8 +45,6 @@ Add or remove features to match the real functionality.
 - Node.js + npm (if frontend assets are used)
 - A database (MySQL, MariaDB, PostgreSQL, SQLite)
 - Git
-
-Adjust versions to match your repository's composer.json / package.json.
 
 ## Installation (local development)
 
@@ -109,13 +103,10 @@ Open http://127.0.0.1:8000 in your browser.
 - Storage: run `php artisan storage:link` to create the public storage symlink for uploaded files.
 - Queues: configure QUEUE_CONNECTION (database, redis, etc.) if background jobs are used.
 
-If your app uses third-party APIs (soil, weather, remote sensors), document required keys here and example env variables (e.g., SOIL_API_KEY).
-
 ## Database & Seeding
 
 - Migrations are in the `database/migrations` directory.
 - Seeders are in `database/seeders` (run with `php artisan db:seed`).
-- If you need demo data for fields/crops/rotations, add a note where those files live or provide a seed command.
 
 Example: create an admin user (adjust according to your seeder implementation):
 
@@ -141,8 +132,6 @@ If you use Pest:
 ```bash
 ./vendor/bin/pest
 ```
-
-Add guidance about writing tests and where tests live (typically `tests/Feature` and `tests/Unit`).
 
 ## Deployment notes (production checklist)
 
@@ -171,16 +160,12 @@ Contributions are welcome! A suggested workflow:
 4. Run tests locally.
 5. Open a pull request describing your changes.
 
-Add or link to a CONTRIBUTING.md if you have rules for code style, commit messages, or PR templates.
-
 ## Roadmap / TODOs
 
 - Improve rotation recommendation algorithm (add soil/water constraints)
 - Import/export rotation plans (CSV and GPX)
 - Add user roles and permissions
 - Mobile-friendly UI / PWA
-
-Replace with the project's actual roadmap.
 
 ## License
 
@@ -193,9 +178,3 @@ Maintainer: Osuald — https://github.com/Osuald
 Report bugs or request features via GitHub Issues: https://github.com/Osuald/Smart-crop-rotation/issues
 
 ---
-
-If you'd like, I can:
-- Tailor the Installation and Configuration steps to exact versions in your composer.json and package.json.
-- Add example screenshots or badges (CI, code coverage).
-- Generate an examples/fixtures dataset and seeders for demo rotations.
-Tell me which pieces you'd like me to add or customize and I will update the README accordingly.
